@@ -1,6 +1,5 @@
-name: CI Pipeline
+name: Java CI with Maven
 
-# Disparado em qualquer push no repositório
 on:
   push:
     branches:
@@ -14,20 +13,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Baixar o código do repositório
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check out the repository
+        uses: actions/checkout@v3
 
-      # Configurar o Java 17
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
+          distribution: 'temurin'
 
-      # Compilar o projeto com Maven
       - name: Build with Maven
-        run: mvn clean compile
+        run: mvn clean install
 
-      # Executar testes
-      - name: Run tests
+      - name: Run tests with Maven
         run: mvn test
+
+      - name: Upload test reports
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+
+      - name: Upload build artifact
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: target/*.jar
